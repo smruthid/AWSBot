@@ -118,19 +118,31 @@ In this section, you will create an Amazon Lambda function that will validate th
 
 
 ### Intents Handlers ###
-def get_recommendations(risk):
+def get_recommendations(risk, amount):
+    investment_amount = int(amount)
     risk = risk.lower()
+    bonds = 0
+    spy = 0
     rec = ""
     if risk == "none":
-        rec = "100% bonds (AGG), 0% equities (SPY)"
+        bonds = investment_amount
+        spy = 0
+        rec = """ 100% should be invested in bonds (AGG): ${}, 0% should be invested in equities (SPY): ${}""".format(bonds, spy)
     elif risk == "low":
-        rec = "60% bonds (AGG), 40% equities (SPY)"
+        bonds = investment_amount * 0.6
+        spy = investment_amount * 0.4
+        rec = """ 60% should be invested in bonds (AGG): ${}, 40% should be invested in equities (SPY): ${}""".format(bonds, spy)
     elif risk == "medium":
-        rec = "40% bonds (AGG), 60% equities (SPY)"
+        bonds = investment_amount * 0.4
+        spy = investment_amount * 0.6
+        rec = """ 40% should be invested in bonds (AGG): ${}, 60% should be invested in equities (SPY): ${}""".format(bonds, spy)
     elif risk == "high":
-        rec = "20% bonds (AGG), 80% equities (SPY)"
+        bonds = investment_amount * 0.2
+        spy = investment_amount * 0.8
+        rec = """ 20% should be invested in bonds (AGG): ${}, 80% should be invested in equities (SPY): ${}""".format(bonds, spy)
     else:
         rec = "I can not understand you. Please enter a valid value."
+        
     return rec
 
 def recommend_portfolio(intent_request):
@@ -149,7 +161,7 @@ def recommend_portfolio(intent_request):
         return delegate(output_session_attributes, get_slots(intent_request))
         
         
-    userRec = get_recommendations(risk_level)
+    userRec = get_recommendations(risk_level, investment_amount)
     return close(
         intent_request["sessionAttributes"],
         "Fulfilled",
@@ -181,4 +193,3 @@ def lambda_handler(event, context):
     response = dispatch(event)
     logger.debug(response)
     return response
-
