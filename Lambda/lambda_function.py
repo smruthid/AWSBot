@@ -1,6 +1,11 @@
 ### Required Libraries ###
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+import json
+import logging
+
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
 ### Functionality Helper Functions ###
 def parse_int(n):
@@ -113,6 +118,21 @@ In this section, you will create an Amazon Lambda function that will validate th
 
 
 ### Intents Handlers ###
+def get_recommendations(risk):
+    risk = risk.lower()
+    rec = ""
+    if risk == "none":
+        rec = "100% bonds (AGG), 0% equities (SPY)"
+    elif risk == "low":
+        rec = "60% bonds (AGG), 40% equities (SPY)"
+    elif risk == "medium":
+        rec = "40% bonds (AGG), 60% equities (SPY)"
+    elif risk == "high":
+        rec = "20% bonds (AGG), 80% equities (SPY)"
+    else:
+        rec = "I can not understand you. Please enter a valid value."
+    return rec
+
 def recommend_portfolio(intent_request):
     """
     Performs dialog management and fulfillment for recommending a portfolio.
@@ -123,8 +143,21 @@ def recommend_portfolio(intent_request):
     investment_amount = get_slots(intent_request)["investmentAmount"]
     risk_level = get_slots(intent_request)["riskLevel"]
     source = intent_request["invocationSource"]
-
-    # YOUR CODE GOES HERE!
+    
+    if source == "DialogCodeHook":
+        output_session_attributes = intent_request["sessionAttributes"]
+        return delegate(output_session_attributes, get_slots(intent_request))
+        
+        
+    userRec = get_recommendations(risk_level)
+    return close(
+        intent_request["sessionAttributes"],
+        "Fulfilled",
+        {
+            "contentType": "PlainText",
+            "content": userRec
+        }
+        )
 
 
 ### Intents Dispatcher ###
@@ -144,9 +177,8 @@ def dispatch(intent_request):
 
 ### Main Handler ###
 def lambda_handler(event, context):
-    """
-    Route the incoming request based on intent.
-    The JSON body of the request is provided in the event slot.
-    """
+    logger.debug('event={}'.format(event))
+    response = dispatch(event)
+    logger.debug(response)
+    return response
 
-    return dispatch(event)
