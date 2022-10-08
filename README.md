@@ -18,7 +18,7 @@ The developer will need to create an AWS account to reproduce this.
 
 ## Structure of Repository
 
-
+There are 2 .mov files which are recordings. The RoboAdvisorRecording.mov file is a recording of the initial Lex bot with the intent, utterances, slots, and confirmation. The lambdaFunctionIncorporated.mov file is a recording of the enhanced Lex bot which incorporated AWS Lambda and calculates the amount the user should invest.
 
 ---
 
